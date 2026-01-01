@@ -40,16 +40,16 @@ The dial has 100 positions, so computing `new_pos = (pos ± N) mod 100` and coun
 |  | [solution.ml](https://github.com/pserb/advent-of-fpga-2025/blob/main/day01/src/solution.ml) |
 |--------|-----------|
 | Slice LUTs | 140 (0.43%) |
-| Slice Registers | 50 |
+| Slice Registers | 51 |
 | Slices | 51 (0.63%) |
-| Clock Period | 8.700 ns |
-| Frequency | 114.94 MHz |
+| Clock Period | 6.600 ns |
+| Frequency | 151.52 MHz |
 | Cycles / Instruction | 1 |
-| Throughput | 114.94 M instr/s |
-| Completion (4500 instr) | 39.15 μs |
+| Throughput | 151.52 M instr/s |
+| Completion (4500 instr) | 29.70 μs |
 
 | | [solution.ml](https://github.com/pserb/advent-of-fpga-2025/blob/main/day01/src/solution.ml) | [Target](https://github.com/maneatingape/advent-of-code-rust/blob/main/src/year2025/day01.rs) | vs Target |
 |---|------|--------|-----------|
-| Completion | 39.15 μs | 24 μs | 0.61 |
+| Completion | 29.70 μs | 24 μs | 0.81 |
 
 *Target: CPU benchmark (24 μs on Apple M2 Max). Ratio < 1 indicates slower than baseline.*

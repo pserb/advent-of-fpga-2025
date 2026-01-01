@@ -19,18 +19,18 @@ module type Solution = sig
       { ready : 'a
       ; p1 : 'a
       ; p2 : 'a
-      ; done_ : 'a
       }
 
     include Interface.S with type 'a t := 'a t
   end
 
-  val create : Signal.t I.t -> Signal.t O.t
+  val create : Scope.t -> Signal.t I.t -> Signal.t O.t
 end
 
 let run_simulation (module S : Solution) ~bytes : int * int =
   let module Simulator = Cyclesim.With_interface (S.I) (S.O) in
-  let sim = Simulator.create S.create in
+  let scope = Scope.create ~flatten_design:true () in
+  let sim = Simulator.create (S.create scope) in
   let inputs = Cyclesim.inputs sim in
   let outputs = Cyclesim.outputs sim in
   inputs.clear := vdd;
@@ -64,13 +64,3 @@ let%expect_test "test day01" =
     Part 2: 6638
     |}]
 ;;
-
-(* let%expect_test "test day01 v2" =
-  let bytes = Sim.file_to_bytes "../../inputs/day01.txt" in
-  let p1, p2 = run_simulation (module Day01.Solution_v2) ~bytes in
-  printf "Part 1: %d\nPart 2: %d\n" p1 p2;
-  [%expect {|
-    Part 1: 1129
-    Part 2: 6638
-    |}]
-;; *)
