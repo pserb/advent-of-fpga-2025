@@ -35,7 +35,7 @@ Part 1 and 2 solutions are output.
 
 The solution processes one dial instruction per cycle using combinational `divmod_100` logic to compute position wraps without iteration.
 
-The dial has 100 positions, so computing `new_pos = (pos ± N) mod 100` and counting wraps requires division. Rather than sequential division, the design uses parallel comparators: a priority encoder finds the quotient by checking `x >= q*100` for q = 10 down to 1, while all 11 possible remainders are precomputed. A mux selects the correct remainder based on the quotient. This trades LUT area for single-cycle latency.
+The dial has 100 positions, so computing `new_pos = (pos ± N) mod 100` and counting wraps requires division. Rather than sequential division, the design uses parallel threshold counting: 10 comparators check `x >= 100`, `x >= 200`, ..., `x >= 1000` simultaneously, and a tree adder sums the results to get the quotient. All 11 possible remainders are precomputed in parallel, and a mux selects the correct one. This trades LUT area for single-cycle latency.
 
 |  | [solution.ml](https://github.com/pserb/advent-of-fpga-2025/blob/main/day01/src/solution.ml) |
 |--------|-----------|
