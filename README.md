@@ -31,25 +31,48 @@ Part 1 and 2 solutions are output.
 
 *Python reference solutions are provided.*
 
+| Day | Solution | FPGA (us) | CPU (us) | Ratio |
+|----:|:---------|----------:|---------:|------:|
+| 1 | [solution.ml](day01/src/solution.ml) | 29.70 | 24 | 0.81 |
+| 2 | [solution.ml](day02/src/solution.ml) | 0.28 | 1 | 3.57 |
+| 3 | - | - | 21 | - |
+| 4 | - | - | 177 | - |
+| 5 | - | - | 20 | - |
+| 6 | - | - | 20 | - |
+| 7 | - | - | 5 | - |
+| 8 | - | - | 527 | - |
+| 9 | - | - | 40 | - |
+| 10 | - | - | 194 | - |
+| 11 | - | - | 75 | - |
+| 12 | - | - | 25 | - |
+| **Total** | | **29.98** | **1129** | **-** |
+
 ### Day 1 - [Secret Entrance](https://adventofcode.com/2025/day/1)
 
 The solution processes one dial instruction per cycle using combinational `divmod_100` logic to compute position wraps without iteration.
 
 The dial has 100 positions, so computing `new_pos = (pos ± N) mod 100` and counting wraps requires division. Rather than sequential division, the design uses parallel threshold counting: 10 comparators check `x >= 100`, `x >= 200`, ..., `x >= 1000` simultaneously, and a tree adder sums the results to get the quotient. All 11 possible remainders are precomputed in parallel, and a mux selects the correct one. This trades LUT area for single-cycle latency.
 
-|  | [solution.ml](https://github.com/pserb/advent-of-fpga-2025/blob/main/day01/src/solution.ml) |
-|--------|-----------|
-| Slice LUTs | 140 (0.43%) |
-| Slice Registers | 51 |
-| Slices | 51 (0.63%) |
-| Clock Period | 6.600 ns |
-| Frequency | 151.52 MHz |
-| Cycles / Instruction | 1 |
-| Throughput | 151.52 M instr/s |
-| Completion (4500 instr) | 29.70 μs |
+| Area (LUTs) | Latency (ns) | Freq (MHz) | Power (W) | Cycles/Op | Throughput (Op/s) | Completion (us) |
+|------------:|-------------:|-----------:|----------:|----------:|------------------:|----------------:|
+| 140 (0.43%) | 6.600 | 151.52 | - | 1 | 151.52M | 29.70 |
 
-| | [solution.ml](https://github.com/pserb/advent-of-fpga-2025/blob/main/day01/src/solution.ml) | [Target](https://github.com/maneatingape/advent-of-code-rust/blob/main/src/year2025/day01.rs) | vs Target |
-|---|------|--------|-----------|
-| Completion | 29.70 μs | 24 μs | 0.81 |
+*Op = one dial instruction (e.g., R42)*
 
-*Target: CPU benchmark (24 μs on Apple M2 Max). Ratio < 1 indicates slower than baseline.*
+### Day 2 - [Gift Shop](https://adventofcode.com/2025/day/2)
+
+The key realization is that invalid IDs (numbers like 12341234) form arithmetic sequences. For 4-digit IDs with 2-digit patterns, 1212, 1313, 1414 are spaced exactly 101 apart (call 101 a "step"). This means we can sum all invalid IDs in a range using the triangular number formula rather than enumerating them.
+
+There are 13 distinct pattern families: 5 for Part 1 (exact 2x repetition), 6 additional for Part 2 (3+ repetitions), and 2 overlap cases that get double-counted and must be subtracted. The design computes all 13 contributions in parallel, then combines them with tree adders for Part 1 and inclusion-exclusion arithmetic for Part 2.
+
+The awkward part is division. Each family has a different step value (11, 101, 1001, etc.), and we need to divide by these to find how many invalid IDs land in a range. Hardware dividers are slow and expensive, so instead we precompute reciprocals: `x / step = (x * recip) >> 56` where `recip = ceil(2^56 / step)`. This turns division into a multiply and shift, fully pipelineable.
+
+Each clock cycle, a single [low, high] range arrives. All 13 engines compute their contribution in parallel (the sum of invalid IDs from that pattern family within the range), tree adders combine the results, and the totals accumulate into running Part 1 and Part 2 sums. When the last range is processed, the answers are ready.
+
+The tradeoff here is aggressive: single-cycle-per-range means long combinational paths, and parallelizing all 13 pattern engines with their reciprocal multipliers consumes 56.85% of available LUTs. But the result is 3.57x faster than the CPU baseline, validating the approach.
+
+| Area (LUTs) | Latency (ns) | Freq (MHz) | Power (W) | Cycles/Op | Throughput (Op/s) | Completion (us) |
+|------------:|-------------:|-----------:|----------:|----------:|------------------:|----------------:|
+| 18,532 (56.85%) | 10.000 | 100.00 | 0.789 | 1 | 100M | 0.28 |
+
+*Op = one [low, high] range from the input (e.g., 95-115)
