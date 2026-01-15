@@ -1,0 +1,8 @@
+(library
+ (name day03_testbench)
+ (modules testbench)
+ (libraries day03 sim core hardcaml)
+ (inline_tests
+  (deps ../../inputs/day03.txt))
+ (preprocess
+  (pps ppx_jane ppx_hardcaml ppx_expect)))

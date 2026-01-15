@@ -37,7 +37,7 @@ Part 1 and 2 solutions are output.
 |----:|:---------|----------:|---------:|------:|
 | 1 | [solution.ml](day01/src/solution.ml) | 29.70 | 24 | 0.81 |
 | 2 | [solution.ml](day02/src/solution.ml) | 0.28 | 1 | 3.57 |
-| 3 | - | - | 21 | - |
+| 3 | [solution.ml](day03/src/solution.ml) | 242.42 | 21 | 0.09 |
 | 4 | - | - | 177 | - |
 | 5 | - | - | 20 | - |
 | 6 | - | - | 20 | - |
@@ -47,7 +47,7 @@ Part 1 and 2 solutions are output.
 | 10 | - | - | 194 | - |
 | 11 | - | - | 75 | - |
 | 12 | - | - | 25 | - |
-| **Total** | | **29.98** | **1129** | **-** |
+| **Total** | | **272.40** | **1129** | **-** |
 
 ### Day 1 - [Secret Entrance](https://adventofcode.com/2025/day/1) | [solution.ml](day01/src/solution.ml)
 
@@ -78,3 +78,19 @@ The tradeoff here is that single-cycle-per-range means long combinational paths,
 | 18,532 (56.85%) | 10.000 | 100.00 | 0.789 | 1 | 100M | 0.28 |
 
 *Op = one [low, high] range from the input (e.g., 95-115)*
+
+### Day 3 - [Lobby](https://adventofcode.com/2025/day/3) | [solution.ml](day03/src/solution.ml)
+
+Each bank of 100 digits requires selecting exactly k digits (k=2 for Part 1, k=12 for Part 2) to form the largest possible number while maintaining left-to-right order. Greedy selection works because earlier digit positions have higher place value.
+
+The solution uses a monotonic stack algorithm that processes digits in a single pass as they stream in. For each incoming digit, we pop elements from the stack that are smaller and can be safely replaced (given remaining digits), then push the current digit if the stack isn't full. Two parallel stacks run simultaneously: one for k=2, one for k=12.
+
+All pop decisions can be computed in parallel. For each stack position, a comparator checks if that element is smaller than the incoming digit and if popping it leaves enough remaining digits to fill to k. A priority encoder finds the lowest valid pop point, and a barrel shifter updates the stack in one cycle.
+
+When a newline arrives, each stack is converted to a number and accumulated into the running total. The design processes one byte per cycle with simple 8-bit streaming I/O.
+
+| Area (LUTs) | Latency (ns) | Freq (MHz) | Power (W) | Cycles/Op | Throughput (Op/s) | Completion (us) |
+|------------:|-------------:|-----------:|----------:|----------:|------------------:|----------------:|
+| 474 (1.45%) | 12.000 | 83.33 | 0.142 | 101 | 825K | 242.42 |
+
+*Op = one 100-digit bank*
