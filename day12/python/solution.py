@@ -1,3 +1,5 @@
+# https://adventofcode.com/2025/day/12
+
 with open("../../inputs/day12.txt") as f:
     lines = [line for line in f.read().split("\n")]
 
