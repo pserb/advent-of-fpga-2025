@@ -88,4 +88,25 @@ let send_range_step
     i.range_high := Bits.of_int64_trunc ~width:34 high;
     if Bits.to_bool !(o.ready) then rest else ranges
 ;;
+
 (* end used for day02 *)
+
+(* used for day12 *)
+let file_to_lines filename =
+  let content = In_channel.read_all filename in
+  let all_lines = String.split_lines content in
+  (* skip shape definitions (lines 0-29), get region lines starting at line 30 *)
+  List.filter_mapi all_lines ~f:(fun idx line ->
+    if idx < 30 || String.is_empty (String.strip line)
+    then None
+    else Some (String.strip line))
+;;
+
+let string_to_bits ~width str =
+  (* Pad string to width bytes, convert to bits (big-endian: first char is MSB) *)
+  let padded = str ^ String.make (width - String.length str) '\000' in
+  let bytes = String.to_list padded |> List.map ~f:Char.to_int in
+  let byte_bits = List.map bytes ~f:(fun byte -> Bits.of_int_trunc ~width:8 byte) in
+  Bits.concat_msb byte_bits
+;;
+(* end used for day12 *)

@@ -45,3 +45,6 @@ val send_range_step
   -> i:Bits.t ref Range_stream.I.t
   -> o:Bits.t ref Range_stream.O.t
   -> (int64 * int64) list
+
+val file_to_lines : string -> string list
+val string_to_bits : width:int -> string -> Bits.t

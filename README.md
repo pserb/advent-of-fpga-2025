@@ -18,9 +18,36 @@ Targeting AMD Artix 7 FPGA (XC7A50T-1FGG484C)
 | **GTP Transceivers** | 4 (up to 3.75 Gb/s) |
 | **PCIe** | Gen2 ×4 |
 
+## Getting Started
+*This assumes you have setup your developer environment using Hardcaml with OxCaml and opam, with Jane Street extensions. Installation instructions are here: https://github.com/janestreet/hardcaml_template_project/tree/with-extensions*
+
+Clone the repo, and run the following from the project **root**
+
+Run the testbench for a specific day
+```
+dune test day01
+```
+Run all testbenches
+```
+dune runtest
+```
+Generate the RTL (verilog) for a specific day
+```
+dune exec day01/src/generate_rtl.exe > day01.v
+```
+Run the python reference solution for a specific day
+```
+cd day01/python/
+uv run solution.py
+```
+If you haven't heard of `uv`... become familiar and start using it :) \
+Absolutely the way to work with python: https://docs.astral.sh/uv/
+
+
 ## I/O
 Problem inputs are converted to an int list of bytes, which are sent one byte per clock cycle. This is to keep focus on the solution-solving hardware. Optimally, instead packets of data would be sent once per cycle, each packet problem-specific. \
 *e.g. for day 1, each packet would contain dial rotation (L50, R42, etc.)*
+*Note: I/O is implemented under this "packet" assumption for some problems to highlight a particularly efficient solution*
 
 Part 1 and 2 solutions are output.
 
@@ -46,8 +73,8 @@ Part 1 and 2 solutions are output.
 | 9 | - | - | 40 | - |
 | 10 | - | - | 194 | - |
 | 11 | - | - | 75 | - |
-| 12 | - | - | 25 | - |
-| **Total** | | **272.40** | **1129** | **-** |
+| 12 | [solution.ml](day12/src/solution.ml) | 2.50 | 25 | 10.00 |
+| **Total** | | **274.90** | **1129** | **-** |
 
 ### Day 1 - [Secret Entrance](https://adventofcode.com/2025/day/1) | [solution.ml](day01/src/solution.ml)
 
@@ -94,3 +121,47 @@ When a newline arrives, each stack is converted to a number and accumulated into
 | 474 (1.45%) | 12.000 | 83.33 | 0.142 | 101 | 825K | 242.42 |
 
 *Op = one 100-digit bank*
+
+### Day 12 - [Christmas Tree Farm](https://adventofcode.com/2025/day/12) | [solution.ml](day12/src/solution.ml)
+
+*This problem has no Part 2*
+
+We are trying to determine whether N presents (each constrained to fit in a 3×3 block) can fit into a defined WxH region. Turns out, this reduces to a simple area check: if `total_presents × 9 ≤ W × H`, they fit.
+
+Each input line arrives as 32 bytes of ASCII (`"WxH: P0 P1 P2 P3 P4 P5"`). Since all dimensions and present counts are exactly 2 digits, byte positions are fixed at compile time. The parser extracts 8 two-digit numbers by subtracting `'0'` from each digit byte, multiplying the tens digit by 10, and adding.
+
+The core algorithm is three operations: sum 6 present counts, multiply dimensions for area, compare. A tree adder sums the presents, a single multiplier computes area, and a comparator decides fit. When a region fits, a counter increments. After 1000 lines, the count is the answer.
+
+The design achieves 10x speedup over the CPU baseline by processing one complete line per cycle at 400 MHz. The 208 LUTs are almost entirely byte extraction and arithmetic—the actual algorithm is just a multiply and compare.
+
+| Area (LUTs) | Latency (ns) | Freq (MHz) | Power (W) | Cycles/Op | Throughput (Op/s) | Completion (us) |
+|------------:|-------------:|-----------:|----------:|----------:|------------------:|----------------:|
+| 208 (0.64%) | 2.500 | 400.00 | 0.100 | 1 | 400M | 2.50 |
+
+*Op = one region line (e.g., "43x45: 35 25 41 42 28 38")*
+
+Note: At 32 bytes of I/O per cycle and 400 MHz, an input interface needs to sustain 12.8 GB/s of throughput. This can be satisfied through 100G/200G/400G ethernet networking, DDR4/DDR5 SDRAM (prefilled), or PCIe 4.0x16 or 5.0x8/x16 connected to a host machine generating the input stream.
+
+
+## Project Structure
+All days follow the same structure with a python reference solution, hardcaml src and a testbench (verifying puzzle solving correctness)
+```
+$ tree day01/
+
+day01
+├── python
+│   ├── pyproject.toml
+│   ├── solution.py
+│   └── uv.lock
+├── src
+│   ├── dune
+│   ├── generate_rtl.ml
+│   ├── optimization_ideas.md
+│   └── solution.ml
+└── test
+    ├── dune
+    └── testbench.ml
+```
+
+`inputs/` contains txt file puzzle inputs for each day \
+`lib/` contains ocaml helper code for testbench simulation

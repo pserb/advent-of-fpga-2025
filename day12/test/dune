@@ -1,0 +1,7 @@
+(library
+ (name day12_test)
+ (libraries day12 core hardcaml sim)
+ (inline_tests
+  (deps ../../inputs/day12.txt))
+ (preprocess
+  (pps ppx_jane ppx_hardcaml ppx_expect)))
