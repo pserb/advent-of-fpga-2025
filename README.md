@@ -132,8 +132,6 @@ Each input line arrives as 32 bytes of ASCII (`"WxH: P0 P1 P2 P3 P4 P5"`). Since
 
 The core algorithm is three operations: sum 6 present counts, multiply dimensions for area, compare. A tree adder sums the presents, a single multiplier computes area, and a comparator decides fit. When a region fits, a counter increments. After 1000 lines, the count is the answer.
 
-The design achieves 10x speedup over the CPU baseline by processing one complete line per cycle at 400 MHz. The 208 LUTs are almost entirely byte extraction and arithmetic—the actual algorithm is just a multiply and compare.
-
 | Area (LUTs) | Latency (ns) | Freq (MHz) | Power (W) | Cycles/Op | Throughput (Op/s) | Completion (us) |
 |------------:|-------------:|-----------:|----------:|----------:|------------------:|----------------:|
 | 208 (0.64%) | 2.500 | 400.00 | 0.100 | 1 | 400M | 2.50 |
