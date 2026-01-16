@@ -1,11 +1,11 @@
 open! Core
 open! Hardcaml
 open Bits
-module Simulator = Cyclesim.With_interface (Day02.T.I) (Day02.T.O)
+module Simulator = Cyclesim.With_interface (Day02.Solution.I) (Day02.Solution.O)
 
 let run_simulation ~ranges =
   let scope = Scope.create ~flatten_design:true () in
-  let sim = Simulator.create (Day02.T.create scope) in
+  let sim = Simulator.create (Day02.Solution.create scope) in
   let inputs = Cyclesim.inputs sim in
   let outputs = Cyclesim.outputs sim in
   (* Reset *)
