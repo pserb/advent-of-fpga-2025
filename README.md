@@ -33,7 +33,9 @@ dune runtest
 ```
 Generate the RTL (verilog) for a specific day
 ```
-dune exec day01/src/generate_rtl.exe > day01.v
+dune exec lib/generate_rtl.exe day01 > day01.v
+dune exec lib/generate_rtl.exe day02 > day02.v
+...
 ```
 Run the python reference solution for a specific day
 ```
